@@ -1,5 +1,5 @@
-module github.com/cheggaaa/go-poppler
+module github.com/xdlai/go-poppler
 
-go 1.16
+go 1.22.2
 
-require github.com/ungerik/go-cairo v0.0.0-20210317133935-984b32e6bac6
+require github.com/ungerik/go-cairo v0.0.0-20240304075741-47de8851d267

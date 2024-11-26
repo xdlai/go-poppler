@@ -5,8 +5,12 @@ package poppler
 // #include <glib.h>
 // #include <cairo.h>
 import "C"
-import "unsafe"
-import "github.com/ungerik/go-cairo"
+import (
+	"fmt"
+	"unsafe"
+
+	"github.com/ungerik/go-cairo"
+)
 
 //import "fmt"
 
@@ -138,23 +142,42 @@ func (p *Page) Close() {
 
 // Converts a page into SVG and saves to file.
 // Inspired by https://github.com/dawbarton/pdf2svg
-func (p *Page) ConvertToSVG(filename string){
+func (p *Page) ConvertToSVG(filename string) {
 	width, height := p.Size()
 
 	// Open the SVG file
-	surface := cairo.NewSVGSurface( filename, width, height, cairo.SVG_VERSION_1_2 )
+	surface := cairo.NewSVGSurface(filename, width, height, cairo.SVG_VERSION_1_2)
 
 	// TODO Can be improved by using cairo_svg_surface_create_for_stream() instead of
 	//      cairo_svg_surface_create() for stream processing instead of file processing.
 	//      However, this needs to be changed in github.com/ungerik/go-cairo/surface.go
 
 	// Get cairo context pointer
-	_, drawcontext :=  surface.Native()
+	_, drawcontext := surface.Native()
 
 	// Render the PDF file into the SVG file
-	C.poppler_page_render_for_printing(p.p, (*C.cairo_t)(unsafe.Pointer(drawcontext)) );
+	C.poppler_page_render_for_printing(p.p, (*C.cairo_t)(unsafe.Pointer(drawcontext)))
 
 	// Close the SVG file
 	surface.ShowPage()
 	surface.Destroy()
+}
+
+// Converts a page into SVG and saves to file.
+// Inspired by https://github.com/dawbarton/pdf2svg
+func (p *Page) ConvertToPNG() ([]byte, error) {
+	width, height := p.Size()
+	surface := cairo.NewSurface(cairo.FORMAT_ARGB32, int(width), int(height))
+
+	// Get cairo context pointer
+	_, drawcontext := surface.Native()
+
+	// Render the PDF file into the SVG file
+	C.poppler_page_render_for_printing(p.p, (*C.cairo_t)(unsafe.Pointer(drawcontext)))
+
+	data, status := surface.WriteToPNGStream()
+	if status != cairo.STATUS_SUCCESS {
+		return nil, fmt.Errorf("failed to convert page to PNG: %s", status.String())
+	}
+	return data, nil
 }
