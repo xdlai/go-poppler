@@ -172,6 +172,9 @@ func (p *Page) ConvertToPNG(dpi int) ([]byte, error) {
 	width, height := p.Size()
 	surface := cairo.NewSurface(cairo.FORMAT_ARGB32, int(pointToPixel(width)), int(pointToPixel(height)))
 
+	// Scale the surface to match the DPI
+	surface.Scale(float64(dpi)/72.0, float64(dpi)/72.0)
+
 	// Get cairo context pointer
 	_, drawcontext := surface.Native()
 
