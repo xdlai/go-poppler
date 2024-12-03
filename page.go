@@ -165,9 +165,12 @@ func (p *Page) ConvertToSVG(filename string) {
 
 // Converts a page into SVG and saves to file.
 // Inspired by https://github.com/dawbarton/pdf2svg
-func (p *Page) ConvertToPNG() ([]byte, error) {
+func (p *Page) ConvertToPNG(dpi int) ([]byte, error) {
+	pointToPixel := func(point float64) float64 {
+		return point * float64(dpi) / 72.0
+	}
 	width, height := p.Size()
-	surface := cairo.NewSurface(cairo.FORMAT_ARGB32, int(width), int(height))
+	surface := cairo.NewSurface(cairo.FORMAT_ARGB32, int(pointToPixel(width)), int(pointToPixel(height)))
 
 	// Get cairo context pointer
 	_, drawcontext := surface.Native()
